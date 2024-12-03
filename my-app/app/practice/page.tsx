@@ -1,105 +1,92 @@
 "use client"
-import React, { useState } from 'react';
-import Button from '../../components/button';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import Header from '../../components/header';
+import React, { useState } from "react";
+import dynamic from 'next/dynamic'
 
-const Calendar = () => {
+const WeeklyCalendar = () => {
 
-  // #################
-  let days = ['Sun', 'Mon', 'Tues', 'Wed', 'Thur', 'Fri', 'Sat']
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  let [currentMonth, setCurrentMonth] = useState(new Date())
+  const getStartOfWeek = (date) => {
+    const day = date.getDay();
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+    return new Date(date.setDate(diff));
+  };
 
-  const getMonth = currentMonth.toLocaleDateString('en-US', {
-    day:'2-digit'
-  })
-
-  console.log(getMonth)
-  const getYear = currentMonth.getFullYear()
-
-  const handlePrevMonth = () => {
-    let newDate = new Date(currentMonth)
-    newDate.setMonth(newDate.getMonth() - 1)
-    setCurrentMonth(newDate)
-  }
-
-  const handleNextMonth = () => {
-    let newDate = new Date(currentMonth)
-    newDate.setMonth(newDate.getMonth() + 1)
-    setCurrentMonth(newDate)
-  }
-
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
-
-  const endOfMonth = new Date();
-  endOfMonth.setMonth(endOfMonth.getMonth() + 1);
-  endOfMonth.setDate(0);
-  endOfMonth.setHours(23, 59, 59, 999);
-
-
-  function FormatDate(date) {
-    const formattedDate = date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'alphabet',
-      day: '2-digit',
+  const getDaysOfWeek = (startOfWeek) => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const day = new Date(startOfWeek);
+      day.setDate(startOfWeek.getDate() + i);
+      return day;
     });
-    return formattedDate
-  }
+  };
 
-  function GetDaysInMonth(date) {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  }
+  const handlePreviousWeek = () => {
+    const newDate = new Date(getStartOfWeek(currentDate));
+    newDate.setDate(newDate.getDate() - 7);
+    setCurrentDate(newDate);
+  };
 
-  const intervals = [15, 30, 45, 59];
-  const hours = Array.from({ length: 24 }, (_, i) => i + 1);
+  const handleNextWeek = () => {
+    const newDate = new Date(getStartOfWeek(currentDate));
+    newDate.setDate(newDate.getDate() + 7);
+    setCurrentDate(newDate);
+  };
+
+  const startOfWeek = getStartOfWeek(currentDate);
+  const daysOfWeek = getDaysOfWeek(startOfWeek);
+  const hours = Array.from({ length: 24 }, (_, i) => i + 1); // 0 to 23
 
   return (
-    <div className="px-3">
+    <div>
+      {/* Week Navigation */}
+      <div className="flex justify-between mb-4">
+        <button onClick={handlePreviousWeek} className="p-2 bg-gray-200">
+          Previous Week
+        </button>
+        <button onClick={handleNextWeek} className="p-2 bg-gray-200">
+          Next Week
+        </button>
+      </div>
 
-      <Header month={getMonth} year={getYear} handleNextMonth={handleNextMonth} handlePrevMonth={handlePrevMonth} />
+      <div className="grid grid-cols-8 border">
 
-      {days.map((day, idx) => {
-        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), idx + 1);
-        return (
-          <div key={idx} className="flex flex-col font-bold text-center border p-2">
-            {day} {date.getDate()}
+        <div className="p-2 font-bold border-r text-center">Time</div>
+        {daysOfWeek.map((day, index) => (
+          <div key={index} className="p-2 font-bold text-center border-r">
+            {day.toDateString()}
           </div>
-        );
-      })}
-      <div className='mt-4 grid grid-cols-8 grid-rows-24 items-center justify-center  border-2 border-gray-400'>
+        ))}
 
-        {hours.map((hour, rowIdx) => (
-          <>
-            <div key={rowIdx} className="text-center">
-              {hour > 12 ? hour - 12 + ' ' + 'PM' : hour + ' ' + 'AM'}
-            </div>
-            {days.map((day, colIdx) => (
-              <div
-                key={`${rowIdx}-${colIdx}`}
-                className="grid grid-rows-4 gap-0.5 border"
-              >
-                {intervals.map((interval, idx) => (
-                  <div key={`${rowIdx}-${colIdx}-${idx}`} className="border-b-[1px] border-gray-300 p-4 text-center">
-                    {(hour === currentMonth.getDay() && day === getMonth ) && (
-                      <>
-                        <p>{currentMonth.getDay()}</p>
-                        <p>{currentMonth.getMinutes()}</p>
-                      </>
-                    )}
+        {/* Rows for Time Slots */}
+        {hours.map((hour, rowIndex) => (
+          <React.Fragment key={rowIndex}>
+            <div className="p-2 border-t border-r text-right">{hour}:00</div>
 
-                  </div>
-                ))}
+            {/* Day Columns */}
+            {daysOfWeek.map((day, colIndex) => (
+              <div key={`${rowIndex}-${colIndex}`} className="p-2 border-t border-r">
+                {/* 4 sections for each hour */}
+                {Array.from({ length: 4 }, (_, quarterIndex) => {
+                  const minutes = quarterIndex * 15; // 0, 15, 30, 45
+                  const cellDateTime = new Date(day);
+                  cellDateTime.setHours(hour, minutes);
+
+                  return (
+                    <div
+                      key={quarterIndex}
+                      className="border-b border-gray-300 text-xs"
+                    >
+                      {cellDateTime.toLocaleString()} {/* Display Date & Time */}
+                    </div>
+                  );
+                })}
               </div>
             ))}
-          </>
+          </React.Fragment>
         ))}
       </div>
-    </div >
+    </div>
   );
 };
 
-export default Calendar;
+export default WeeklyCalendar;

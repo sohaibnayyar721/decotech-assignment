@@ -3,7 +3,7 @@ require('dotenv').config()
 
 async function MongoDbConnect(){
     try{
-       await mongoose.connect(process.env.mongoDB_connection_compass_url)
+       await mongoose.connect(process.env.mongoDB_connection_url)
        console.log('Mongodb is Connected')
     }
     catch(err){

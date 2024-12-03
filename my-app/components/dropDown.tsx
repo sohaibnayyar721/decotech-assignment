@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import {timeSlots} from '../lib/times'
 
 const Dropdown = () => {
     
@@ -14,7 +15,7 @@ const Dropdown = () => {
   };
 
   return (
-    <div className="relative w-64">
+    <div className="relative w-64 overflow-y-scroll">
       <input
         type="text"
         value={selectedOption}
@@ -25,8 +26,8 @@ const Dropdown = () => {
       />
 
       {isOpen && (
-        <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-          {options.map((option, index) => (
+        <ul className=" absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+          {timeSlots.map((option, index) => (
             <li
               key={index}
               onClick={() => selectOption(option)}

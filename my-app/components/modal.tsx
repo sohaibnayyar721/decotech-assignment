@@ -4,28 +4,29 @@ import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
 import Dropdown from "./dropDown";
 import { useState } from "react";
 import BASE_URL from "../Base_URL";
-
+import { format } from 'date-fns'
+import { timeSlots } from "../lib/times";
 function AddEventModal({ targetDate, modal, setModal }) {
 
     let [data, setData] = useState('')
     let [loading, setLoading] = useState(false)
     let [error, setError] = useState('')
 
-    const postEventsDetails = async(data) => {
+    const postEventsDetails = async () => {
         setLoading(true)
-        try{
+        try {
             let response = await fetch(`${BASE_URL}/event`, {
                 method: "POST",
-                headers:{
+                headers: {
                     'Content-type': 'application/json'
                 },
-                body: JSON.stringify(data)
-            }) 
-            if(!response.ok){
+                body: JSON.stringify({ date: new Date(targetDate) })
+            })
+            if (!response.ok) {
                 throw new Error('Unexpected Error Occurr')
             }
             setLoading(false)
-        }catch(err){
+        } catch (err) {
             setLoading(false)
         }
     }
@@ -44,7 +45,7 @@ function AddEventModal({ targetDate, modal, setModal }) {
                     <div className="flex flex-col">
 
                         <div className="flex items-center  gap-6 px-6 mt-10 ">
-                            <span className="font-semibold">Date: </span> {targetDate.toLocaleString('en-US')}
+                            <span className="font-semibold">Date: </span> {format(targetDate, 'EEEE, LLLL dd')}
                         </div>
 
                         <div className="flex items-center gap-6 px-6 mt-7 " >
@@ -55,12 +56,16 @@ function AddEventModal({ targetDate, modal, setModal }) {
                         <div className="px-3 flex items-center gap-6  mt-10 ">
                             <div className="flex flex-col gap-2">
                                 <h1 className="font-semibold">Start Time</h1>
-                                <Dropdown />
+                                {/* <Dropdown /> */}
+                                <input className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
+
                             </div>
 
                             <div className="flex flex-col gap-2">
                                 <h1 className="font-semibold">End Time</h1>
-                                <Dropdown />
+                                {/* <Dropdown /> */}
+                                <input className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
+
                             </div>
                         </div>
                     </div>
@@ -73,7 +78,8 @@ function AddEventModal({ targetDate, modal, setModal }) {
                     >
                         Cancel
                     </button>
-                    <button className=" bg-[#7B5AFF] rounded-full pl-6 pr-6 pt-2 pb-2 text-white">
+                    <button onClick={postEventsDetails} className=" bg-[#7B5AFF] rounded-full pl-6 pr-6 pt-2 pb-2 text-white">
+
                         Save
                     </button>
                 </div>

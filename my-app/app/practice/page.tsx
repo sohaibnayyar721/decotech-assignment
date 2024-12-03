@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from "react";
-import dynamic from 'next/dynamic'
 import AddEventModal from "../../components/modal";
+import { format, getHours } from 'date-fns'
 
 const WeeklyCalendar = () => {
 
@@ -40,13 +40,17 @@ const WeeklyCalendar = () => {
   let [modal, setModal] = useState(false)
   let [targetDate, setTargetDate] = useState(null)
 
-  console.log("target date: ", targetDate)
-  console.log("daysOfWeek: ", daysOfWeek)
-
   const handleOpenModal = (date) => {
     setModal(!modal)
-    setTargetDate(() => new Date(date))
+    setTargetDate(new Date(date))
   }
+
+  let givenDate = [
+    { name: 'Sohaib', date: 'Mon Dec 02 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
+    { name: 'Sohaib', date: 'Mon Dec 02 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
+    { name: 'Asad', date: 'Mon Dec 03 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
+    { name: 'Tehseen', date: 'Mon Dec 04 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' }
+  ]
 
   return (
     <div>
@@ -62,39 +66,44 @@ const WeeklyCalendar = () => {
 
       <div className="grid grid-cols-8 border">
 
-        <div className="p-2 font-bold border-r text-center">Time</div>
-        {daysOfWeek.map((day, index) => (
-          <div key={index} className="p-2 font-bold text-center border-r">
-            {day.toDateString()}
-          </div>
-        ))}
+        <div className="p-2 font-bold border-r text-center"></div>
+        {daysOfWeek.map((day, index) => {
+          let convertDate = new Date(day)
+          return (
+            <div key={index} className="text-center border-r">
+              {format(convertDate, '	EEE, dd')}
+            </div>
+          )
+        }
+        )}
 
-        {hours.map((hour, rowIndex) => (
-          <React.Fragment key={rowIndex}>
+        {hours.map((hour, hourIndex) => (
+
+          <React.Fragment key={hourIndex}>
             <div className="p-2 border-t border-r text-right">{hour}</div>
 
-            {daysOfWeek.map((day, colIndex) => {
-              let getSpecificDate = new Date(day)
+            {daysOfWeek.map((day, dayIndex) => {
+              let convertDay = new Date(day)
+
+              let extractEvent = givenDate.find((date) => {
+                let extractDate = new Date(date.date)
+                return (convertDay.toLocaleDateString() === extractDate.toLocaleDateString() &&
+                  hour === getHours(extractDate)
+                )
+              })
+
+              console.log(extractEvent)
+
               return (
-              <div onClick={() => handleOpenModal(new Date(day))} key={`${rowIndex}-${colIndex}`} className="p-2 border-t border-r">
-                <div className={` ${targetDate === getSpecificDate && 'bg-red-300' } w-full  p-4`}>
-                  {/* <p>{targetDate.toLocaleDateString()}</p> */}
-                  <p>o</p>
+                <div onClick={() => handleOpenModal(new Date(day))} key={`${hourIndex}-${dayIndex}`} className=" border-t border-r">
+                  <div className="p-2">
+                    {
+                      (extractEvent && extractEvent.name) && (
+                        <p className=" font-bold rounded pl-2 border-l-4 border-red-600 bg-red-300">{extractEvent && extractEvent.name}</p>
+                      )
+                    }
+                  </div>
                 </div>
-                {/* {Array.from({ length: 4 }, (_, quarterIndex) => {
-                  const minutes = quarterIndex * 15; // 0, 15, 30, 45
-                  const cellDateTime = new Date(day);
-                  cellDateTime.setHours(hour, minutes);
-                  return (
-                    <div
-                      key={quarterIndex}
-                      className="border-b border-gray-300 text-xs"
-                    >
-                      {cellDateTime.toLocaleString()} 
-                    </div>
-                  );
-                })} */}
-              </div>
               )
             })}
           </React.Fragment>

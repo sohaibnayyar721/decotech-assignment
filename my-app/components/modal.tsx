@@ -5,7 +5,7 @@ import Dropdown from "./dropDown";
 import { useState } from "react";
 import BASE_URL from "../Base_URL";
 
-function AddEventModal({ targetDate, modal, setModal, date }) {
+function AddEventModal({ targetDate, modal, setModal }) {
 
     let [data, setData] = useState('')
     let [loading, setLoading] = useState(false)
@@ -29,7 +29,7 @@ function AddEventModal({ targetDate, modal, setModal, date }) {
             setLoading(false)
         }
     }
-    
+
     return (
         <div className="fixed flex items-center justify-center z-40 bg-gray-900  bg-opacity-50 w-full h-[100vh]">
             <div className="bg-white w-[35rem]  rounded-3xl">

@@ -19,7 +19,7 @@ function Header({month, year, handleNextMonth, handlePrevMonth}) {
         <p>{month} {year}</p>
 
         <div className='flex flex-col gap-5'>
-          <Button>
+          <Button onClick={()=>console.log('hello world')}>
             <p>Add Event</p>
           </Button>
           <Button onClick={handleNextMonth}>

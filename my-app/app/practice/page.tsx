@@ -1,6 +1,7 @@
 "use client"
 import React, { useState } from "react";
 import dynamic from 'next/dynamic'
+import AddEventModal from "../../components/modal";
 
 const WeeklyCalendar = () => {
 
@@ -34,11 +35,22 @@ const WeeklyCalendar = () => {
 
   const startOfWeek = getStartOfWeek(currentDate);
   const daysOfWeek = getDaysOfWeek(startOfWeek);
-  const hours = Array.from({ length: 24 }, (_, i) => i + 1); // 0 to 23
+  const hours = Array.from({ length: 24 }, (_, i) => i + 1);
+
+  let [modal, setModal] = useState(false)
+  let [targetDate, setTargetDate] = useState(null)
+
+  console.log("target date: ", targetDate)
+  console.log("daysOfWeek: ", daysOfWeek)
+
+  const handleOpenModal = (date) => {
+    setModal(!modal)
+    setTargetDate(() => new Date(date))
+  }
 
   return (
     <div>
-      {/* Week Navigation */}
+      {modal && <AddEventModal targetDate={targetDate} modal={modal} setModal={setModal} />}
       <div className="flex justify-between mb-4">
         <button onClick={handlePreviousWeek} className="p-2 bg-gray-200">
           Previous Week
@@ -57,31 +69,34 @@ const WeeklyCalendar = () => {
           </div>
         ))}
 
-        {/* Rows for Time Slots */}
         {hours.map((hour, rowIndex) => (
           <React.Fragment key={rowIndex}>
-            <div className="p-2 border-t border-r text-right">{hour}:00</div>
+            <div className="p-2 border-t border-r text-right">{hour}</div>
 
-            {/* Day Columns */}
-            {daysOfWeek.map((day, colIndex) => (
-              <div key={`${rowIndex}-${colIndex}`} className="p-2 border-t border-r">
-                {/* 4 sections for each hour */}
-                {Array.from({ length: 4 }, (_, quarterIndex) => {
+            {daysOfWeek.map((day, colIndex) => {
+              let getSpecificDate = new Date(day)
+              return (
+              <div onClick={() => handleOpenModal(new Date(day))} key={`${rowIndex}-${colIndex}`} className="p-2 border-t border-r">
+                <div className={` ${targetDate === getSpecificDate && 'bg-red-300' } w-full  p-4`}>
+                  {/* <p>{targetDate.toLocaleDateString()}</p> */}
+                  <p>o</p>
+                </div>
+                {/* {Array.from({ length: 4 }, (_, quarterIndex) => {
                   const minutes = quarterIndex * 15; // 0, 15, 30, 45
                   const cellDateTime = new Date(day);
                   cellDateTime.setHours(hour, minutes);
-
                   return (
                     <div
                       key={quarterIndex}
                       className="border-b border-gray-300 text-xs"
                     >
-                      {cellDateTime.toLocaleString()} {/* Display Date & Time */}
+                      {cellDateTime.toLocaleString()} 
                     </div>
                   );
-                })}
+                })} */}
               </div>
-            ))}
+              )
+            })}
           </React.Fragment>
         ))}
       </div>

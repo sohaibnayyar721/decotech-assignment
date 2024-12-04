@@ -1,34 +1,38 @@
 "use client"
 import React from "react";
 import CloseOutlinedIcon from "@mui/icons-material/CloseOutlined";
-import Dropdown from "./dropDown";
-import { useState } from "react";
-import BASE_URL from "../Base_URL";
 import { format } from 'date-fns'
 import { timeSlots } from "../lib/times";
+import { usePostEvents } from '../apis/apiFunctions/events'
+import { memo } from "react";
+import { useState } from "react";
+import Select from 'react-select';
+
 function AddEventModal({ targetDate, modal, setModal }) {
 
-    let [data, setData] = useState('')
-    let [loading, setLoading] = useState(false)
-    let [error, setError] = useState('')
+    let { postEvent, data, isError, error, isPending, isSuccess } = usePostEvents()
 
-    const postEventsDetails = async () => {
-        setLoading(true)
-        try {
-            let response = await fetch(`${BASE_URL}/event`, {
-                method: "POST",
-                headers: {
-                    'Content-type': 'application/json'
-                },
-                body: JSON.stringify({ date: new Date(targetDate) })
-            })
-            if (!response.ok) {
-                throw new Error('Unexpected Error Occurr')
-            }
-            setLoading(false)
-        } catch (err) {
-            setLoading(false)
-        }
+    let [eventData, setEventData] = useState({
+        date: new Date(targetDate),
+        eventName: '',
+        startTime: '',
+        endTime: ''
+    })
+
+    const inputOnChange = (event) => {
+        let { name, value } = event.target
+        setEventData({ ...eventData, [name]: value })
+    }
+
+    const Save = () => {
+        postEvent(eventData)
+        setEventData({
+            date: '',
+            eventName: '',
+            startTime: '',
+            endTime: '',
+        });
+        setModal(!modal)
     }
 
     return (
@@ -38,39 +42,32 @@ function AddEventModal({ targetDate, modal, setModal }) {
                     <h1 className="font-semibold">Details</h1>
                     <CloseOutlinedIcon
                         className="cursor-pointer"
-                        onClick={() => setModal(!modal)}
-                    />
+                        onClick={() => setModal(!modal)} />
                 </div>
                 <div className="flex items-center">
                     <div className="flex flex-col">
-
                         <div className="flex items-center  gap-6 px-6 mt-10 ">
                             <span className="font-semibold">Date: </span> {format(targetDate, 'EEEE, LLLL dd')}
                         </div>
-
                         <div className="flex items-center gap-6 px-6 mt-7 " >
                             <h1 className="font-semibold">Event Name</h1>
-                            <input className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
+                            <input name='eventName' value={eventData.eventName} onChange={inputOnChange} className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
                         </div>
-
                         <div className="px-3 flex items-center gap-6  mt-10 ">
                             <div className="flex flex-col gap-2">
                                 <h1 className="font-semibold">Start Time</h1>
                                 {/* <Dropdown /> */}
-                                <input className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
-
+                                <input name='startTime' value={eventData.startTime} onChange={inputOnChange} className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
                             </div>
-
                             <div className="flex flex-col gap-2">
                                 <h1 className="font-semibold">End Time</h1>
+                               
                                 {/* <Dropdown /> */}
-                                <input className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
-
+                                <input name='endTime' value={eventData.endTime} onChange={inputOnChange} className="w-40 h-9 border-[2px] border-[#D9D9D9] rounded-lg p-2 shadow-lg text-black font-semibold" ></input>
                             </div>
                         </div>
                     </div>
                 </div>
-
                 <div className="flex gap-2 justify-end p-4">
                     <button
                         className="text-black font-semibold border[#D9D9D9] border-[1px] rounded-full pl-6 pr-6 pt-2 pb-2 "
@@ -78,8 +75,7 @@ function AddEventModal({ targetDate, modal, setModal }) {
                     >
                         Cancel
                     </button>
-                    <button onClick={postEventsDetails} className=" bg-[#7B5AFF] rounded-full pl-6 pr-6 pt-2 pb-2 text-white">
-
+                    <button disabled={isPending} onClick={Save} className=" bg-[#7B5AFF] rounded-full pl-6 pr-6 pt-2 pb-2 text-white">
                         Save
                     </button>
                 </div>
@@ -88,4 +84,4 @@ function AddEventModal({ targetDate, modal, setModal }) {
     );
 }
 
-export default AddEventModal;
+export default memo(AddEventModal);

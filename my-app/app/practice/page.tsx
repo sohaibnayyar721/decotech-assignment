@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import AddEventModal from "../../components/modal";
 import { format, getHours } from 'date-fns'
+import { useGetEvents } from '../../apis/apiFunctions/events'
 
 const WeeklyCalendar = () => {
 
@@ -45,12 +46,9 @@ const WeeklyCalendar = () => {
     setTargetDate(new Date(date))
   }
 
-  let givenDate = [
-    { name: 'Sohaib', date: 'Mon Dec 02 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
-    { name: 'Sohaib', date: 'Mon Dec 02 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
-    { name: 'Asad', date: 'Mon Dec 03 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' },
-    { name: 'Tehseen', date: 'Mon Dec 04 2024 11:58:50 GMT+0500 (Pakistan Standard Time)' }
-  ]
+  let { isPending, isError, data, error } = useGetEvents()
+
+  let hoursStamp = ['00-15', '16-30', '31-45', '46-59']
 
   return (
     <div>
@@ -63,45 +61,99 @@ const WeeklyCalendar = () => {
           Next Week
         </button>
       </div>
-
-      <div className="grid grid-cols-8 border">
-
-        <div className="p-2 font-bold border-r text-center"></div>
+      <div className="border-black grid grid-cols-8 border">
+        <div className="border-black p-2 font-bold border-r text-center"></div>
         {daysOfWeek.map((day, index) => {
           let convertDate = new Date(day)
           return (
-            <div key={index} className="text-center border-r">
+            <div key={index} className="border-black text-center border-r">
               {format(convertDate, '	EEE, dd')}
             </div>
           )
         }
         )}
-
         {hours.map((hour, hourIndex) => (
-
           <React.Fragment key={hourIndex}>
-            <div className="p-2 border-t border-r text-right">{hour}</div>
-
+            <div className="flex items-center justify-center border-black p-2 border-t border-r text-right">{hour > 12 ? hour - 12 + 'pm' : hour + 'am'}</div>
             {daysOfWeek.map((day, dayIndex) => {
               let convertDay = new Date(day)
-
-              let extractEvent = givenDate.find((date) => {
-                let extractDate = new Date(date.date)
-                return (convertDay.toLocaleDateString() === extractDate.toLocaleDateString() &&
-                  hour === getHours(extractDate)
+              let extractEvent = data?.find((date) => {
+                let convertApiDate = new Date(date?.date)
+                let getStartHour = Number(date?.startTime.split(':')[0])
+                let getEndHour = Number(date?.endTime.split(':')[0])
+                return (convertDay.toDateString() === convertApiDate.toDateString()
+                  && (hour >= getStartHour && hour <= getEndHour)
                 )
               })
-
-              console.log(extractEvent)
-
               return (
-                <div onClick={() => handleOpenModal(new Date(day))} key={`${hourIndex}-${dayIndex}`} className=" border-t border-r">
-                  <div className="p-2">
+                <div onClick={() => handleOpenModal(new Date(day))} key={`${hourIndex}-${dayIndex}`} className={`border-gray-400 border-t border-r`}>
+                  <div className="h-full">
                     {
-                      (extractEvent && extractEvent.name) && (
-                        <p className=" font-bold rounded pl-2 border-l-4 border-red-600 bg-red-300">{extractEvent && extractEvent.name}</p>
-                      )
+                      hoursStamp.map((stamp) => {
+                        return (
+                          // <div className="h-12 border-[1px] border-gray-400">
+                          //   {/* {stamp} */}
+                          // </div>
+
+                           <div className="h-12 border-[1px] border-gray-400">
+                            {
+                              (
+                                (Number(extractEvent?.startTime.split(':')[0]) >= hour
+                                  ||
+                                  Number(extractEvent?.endTime.split(':')[0]) <= hour
+                                )
+                                &&
+                                (
+                                  Number(extractEvent?.startTime.split(':')[1]) >= Number(stamp.split('-')[0])
+                                  ||
+                                  Number(extractEvent?.endTime.split(':')[1]) <= Number(stamp.split('-')[1])
+                                )
+                              )
+                              && (
+                                <div className="h-full">
+                                  {
+                                    (
+                                      Number(extractEvent?.startTime.split(':')[1]) >= Number(stamp.split('-')[0])
+                                      ||
+                                      Number(extractEvent?.endTime.split(':')[1]) <= Number(stamp.split('-')[0])
+                                    )
+                                      ?
+                                      <div className={`h-full font-bold ${Number(extractEvent?.startTime.split(':')[0]) === Number(extractEvent?.endTime.split(':')[0]) ? 'rounded-lg' : 'rounded-t-lg'}  pl-2 border-l-4 border-red-600 bg-red-300`}>
+                                        {extractEvent?.eventName}
+                                      </div>
+                                      :
+                                      (Number(extractEvent?.startTime.split(':')[1]) >= Number(stamp.split('-')[0])
+                                        ||
+                                        Number(extractEvent?.startTime.split(':')[1]) <= Number(stamp.split('-')[0])
+                                      ) ?
+                                        <div className={`h-full font-bold ${Number(extractEvent?.startTime.split(':')[0]) === Number(extractEvent?.endTime.split(':')[0]) ? 'rounded-lg' : 'rounded-t-lg'}  pl-2 border-l-4 border-red-600 bg-red-300`}>
+                                        </div>
+                                        :
+                                        ""
+                                  }
+                                </div>
+                              )
+                            }
+                          </div>
+                        
+                        )
+                      })
                     }
+
+                    {/* ---- Right code  */}
+                    {/* {
+                      Number(extractEvent?.startTime.split(':')[0]) === hour ?
+                      <div className={`w-full h-full font-bold ${Number(extractEvent?.startTime.split(':')[0]) === Number(extractEvent?.endTime.split(':')[0]) ? 'rounded-lg' :'rounded-t-lg'}  pl-2 border-l-4 border-red-600 bg-red-300`}>
+                      {extractEvent?.eventName}
+                    </div>
+                    :  ( hour >  Number(extractEvent?.startTime.split(':')[0]) || hour <  Number(extractEvent?.startTime.split(':')[0]) )  ?
+                    <div className={`font-bold w-full h-full border-l-4 border-red-600 bg-red-300 ${ hour === Number(extractEvent?.endTime.split(':')[0]) && 'rounded-b-lg'} `}>
+                    </div>
+                    :
+                    ""
+                    } */}
+
+
                   </div>
                 </div>
               )
@@ -109,7 +161,7 @@ const WeeklyCalendar = () => {
           </React.Fragment>
         ))}
       </div>
-    </div>
+    </div >
   );
 };
 

@@ -1,5 +1,6 @@
 import { Roboto_Condensed } from "next/font/google";
 import "./globals.css";
+import QueryProviders from "./../utils/QueryProviders";
 
 const roboto = Roboto_Condensed({
   weight: ["400", "700"],
@@ -15,13 +16,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-      <html lang="en">
-        <body
-          className={` ${roboto.className} `}
-          suppressHydrationWarning={true}
-        >
-          {children}
-        </body>
-      </html>
+    <html lang="en">
+      <body className={` ${roboto.className} `} suppressHydrationWarning={true}>
+        <QueryProviders>{children}</QueryProviders>
+      </body>
+    </html>
   );
 }

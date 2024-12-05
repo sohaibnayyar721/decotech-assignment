@@ -27,7 +27,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-, "apis/axios.js"  ],
+, "apis/axios.js", "components/modal.jsx", "components/header.jsx", "components/button.jsx"  ],
   "exclude": [
     "node_modules"
   ]

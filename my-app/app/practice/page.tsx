@@ -48,7 +48,10 @@ const WeeklyCalendar = () => {
 
   let { isPending, isError, data, error } = useGetEvents()
 
-  let hoursStamp = [0, 15, 30, 45]
+  // let hoursStamp = [0, 15, 30, 45]
+  let hoursStamp = ['00-14', '15-29', '30-44', '45-59']
+
+
 
   return (
     <div>
@@ -77,6 +80,7 @@ const WeeklyCalendar = () => {
                     {
                       hoursStamp.map((stamp, stampIndex) => {
                         let convertDay = new Date(day)
+                        // console.log("convertDay: ", convertDay.toDateString())
                         let extractEvent = data?.filter((date) => {
 
                           let convertApiDate = new Date(date?.date)
@@ -87,13 +91,26 @@ const WeeklyCalendar = () => {
                           let getStartMinutes = Number(date?.startTime.split(' ')[0].split(':')[1])
                           let getEndMinutes = Number(date?.endTime.split(' ')[0].split(':')[1])
 
+                          let stampStart = Number(stamp.split('-')[0])
+                          let stampEnd = Number(stamp.split('-')[1])
+
                           return (
-                            convertDay.toDateString() === convertApiDate.toDateString()
-                            && (hour >= getStartHour && hour <= getEndHour)
-                            // && (stamp >= getStartMinutes && stamp < getEndMinutes)
-                            // && (stamp >= getEndMinutes && stamp <= getEndMinutes)
+                            (
+
+                              convertDay.toDateString() === convertApiDate.toDateString()
+                              &&
+                              (hour >= getStartHour && hour <= getEndHour)
+                              &&
+                              stampStart >= getStartMinutes && stampEnd <= getEndMinutes
+                              // ( getStartMinutes === getEndMinutes ?
+                              //   stampStart >= getStartMinutes
+                              //   :
+                              //   stampStart >= getStartMinutes && stampEnd <= getEndMinutes
+                              // )  
+                            )
                           )
                         })
+
                         return (
                           <div key={stampIndex} className="h-12 border border-gray-200">
                             {
@@ -101,7 +118,16 @@ const WeeklyCalendar = () => {
                                 return (
                                   <div key={eventIndex} className="h-full">
                                     <div className={`h-full font-bold  pl-2 border-l-4 border-red-600 bg-red-200`}>
-                                      {Number(event.startTime.split(' ')[0].split(':')[1]) === stamp && event?.eventName}
+                                      {
+                                        (
+                                          (Number(event?.startTime.split(' ')[0].split(':')[0])
+                                            === hour)
+                                          &&
+                                          (Number(event.startTime.split(' ')[0].split(':')[1]) === Number(stamp.split("-")[0]))
+                                        )
+                                        && 
+                                        event?.eventName
+                                      }
                                     </div>
                                   </div>
                                 )
